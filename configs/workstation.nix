@@ -1,3 +1,5 @@
+flake-overlays:
+
 { pkgs
 , agenix
 , config
@@ -13,6 +15,8 @@
   security.rtkit.enable = true;
 
   networking.networkmanager.enable = true;
+
+  nixpkgs.overlays = flake-overlays;
 
   environment = {
     sessionVariables.NIXOS_OZONE_WL = "1";

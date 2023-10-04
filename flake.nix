@@ -8,6 +8,10 @@
       url = "github:yaxitech/ragenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nix-matlab = {
+      inputs.nixpkgs.follows = "nixpkgs";
+      url = "gitlab:doronbehar/nix-matlab";
+    };
   };
 
   outputs =
@@ -15,17 +19,23 @@
     , nixpkgs
     , nixpkgs-unstable
     , agenix
+    , nix-matlab
     , ...
     } @ inputs:
+    let
+      flake-overlays = [
+        nix-matlab.overlay
+      ];
+    in
     {
       nixosConfigurations = {
         nixowos = nixpkgs-unstable.lib.nixosSystem {
           specialArgs = inputs;
-          modules = [ ./configs/machines/nixowos/configuration.nix ./configs/boot/systemd.nix ./configs/nix-settings.nix ./configs/uk-region.nix ./configs/workstation.nix agenix.nixosModules.default ];
+          modules = [ ./configs/machines/nixowos/configuration.nix ./configs/boot/systemd.nix ./configs/nix-settings.nix ./configs/uk-region.nix ./configs/workstation.nix agenix.nixosModules.default (import flake-overlays) ];
         };
         nixowos-laptop = nixpkgs-unstable.lib.nixosSystem {
           specialArgs = inputs;
-          modules = [ ./configs/machines/nixowos-laptop/configuration.nix ./configs/boot/systemd.nix ./configs/nix-settings.nix ./configs/uk-region.nix ./configs/workstation.nix agenix.nixosModules.default ];
+          modules = [ ./configs/machines/nixowos-laptop/configuration.nix ./configs/boot/systemd.nix ./configs/nix-settings.nix ./configs/uk-region.nix ./configs/workstation.nix agenix.nixosModules.default (import flake-overlays) ];
         };
         nixos-thinkcentre-tiny = nixpkgs.lib.nixosSystem {
           specialArgs = inputs;
