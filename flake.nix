@@ -35,111 +35,78 @@
     } @ inputs:
     let
       systems = [ "x86_64-linux" ];
+      machines = {
+        nixowos = nixpkgs-unstable.lib.nixosSystem;
+        nixowos-laptop = nixpkgs-unstable.lib.nixosSystem;
+        nixos-thinkcentre-tiny = nixpkgs.lib.nixosSystem;
+        hp-dl380p-g8-LFF = nixpkgs.lib.nixosSystem;
+      } // nixpkgs.lib.foldl (a: b: a // b) (map (x: { "hp-dl380p-sff-${x}" = nixpkgs.lib.nixosSystem; }) (nixpkgs.lib.range 2 5));
+      nixosConfigurations =
+        let
+          toSystem = name: val: val {
+            specialArgs = inputs;
+            modules = (map (a: ./configs/${a}.nix) [ "nix-settings" "uk-region" ]) ++ [ agenix.nixosModules.default ];
+          };
+        in
+        builtins.mapAttrs toSystem machines;
+
       forAllSystems = fn: nixpkgs.lib.genAttrs systems (sys: fn nixpkgs.legacyPackages.${sys});
     in
     {
-      nixosConfigurations = {
-        nixowos = nixpkgs-unstable.lib.nixosSystem {
-          specialArgs = inputs;
-          modules = [
-            ./configs/machines/nixowos/configuration.nix
-            ./configs/boot/systemd.nix
-            ./configs/nix-settings.nix
-            ./configs/uk-region.nix
-            ./configs/kb.nix
-            ./configs/workstation.nix
-            agenix.nixosModules.default
-            home-manager.nixosModules.home-manager
-            ./configs/home-manager/hm-settings.nix
-            catppuccin.nixosModules.catppuccin
-          ];
-        };
-        nixowos-laptop = nixpkgs-unstable.lib.nixosSystem {
-          specialArgs = inputs;
-          modules = [
-            ./configs/machines/nixowos-laptop/configuration.nix
-            ./configs/boot/systemd.nix
-            ./configs/nix-settings.nix
-            ./configs/uk-region.nix
-            ./configs/kb.nix
-            ./configs/workstation.nix
-            agenix.nixosModules.default
-            home-manager.nixosModules.home-manager
-            ./configs/home-manager/hm-settings.nix
-            catppuccin.nixosModules.catppuccin
-          ];
-        };
-        nixos-thinkcentre-tiny = nixpkgs.lib.nixosSystem {
-          specialArgs = inputs;
-          modules = [
-            ./configs/machines/nixos-thinkcentre-tiny/configuration.nix
-            ./configs/boot/systemd.nix
-            ./configs/nix-settings.nix
-            ./configs/uk-region.nix
-            ./configs/server.nix
-            ./configs/services/nextcloud.nix
-            ./configs/services/openldap.nix
-            ./configs/services/navidrome.nix
-            ./configs/services/factorio.nix
-            agenix.nixosModules.default
-          ];
-        };
-        hp-dl380p-g8-LFF = nixpkgs.lib.nixosSystem {
-          specialArgs = inputs;
-          modules = [
-            ./configs/machines/hp-dl380p-g8-LFF/configuration.nix
-            ./configs/boot/grub.nix
-            ./configs/nix-settings.nix
-            ./configs/uk-region.nix
-            ./configs/server.nix
-            agenix.nixosModules.default
-          ];
-        };
-        hp-dl380p-g8-sff-2 = nixpkgs.lib.nixosSystem {
-          specialArgs = inputs;
-          modules = [
-            ./configs/machines/hp-dl380p-g8-sff-2/configuration.nix
-            ./configs/boot/grub.nix
-            ./configs/nix-settings.nix
-            ./configs/uk-region.nix
-            ./configs/server.nix
-            agenix.nixosModules.default
-          ];
-        };
-        hp-dl380p-g8-sff-3 = nixpkgs.lib.nixosSystem {
-          specialArgs = inputs;
-          modules = [
-            ./configs/machines/hp-dl380p-g8-sff-3/configuration.nix
-            ./configs/boot/grub.nix
-            ./configs/nix-settings.nix
-            ./configs/uk-region.nix
-            ./configs/server.nix
-            agenix.nixosModules.default
-          ];
-        };
-        hp-dl380p-g8-sff-4 = nixpkgs.lib.nixosSystem {
-          specialArgs = inputs;
-          modules = [
-            ./configs/machines/hp-dl380p-g8-sff-4/configuration.nix
-            ./configs/boot/grub.nix
-            ./configs/nix-settings.nix
-            ./configs/uk-region.nix
-            ./configs/server.nix
-            agenix.nixosModules.default
-          ];
-        };
-        hp-dl380p-g8-sff-5 = nixpkgs.lib.nixosSystem {
-          specialArgs = inputs;
-          modules = [
-            ./configs/machines/hp-dl380p-g8-sff-5/configuration.nix
-            ./configs/boot/grub.nix
-            ./configs/nix-settings.nix
-            ./configs/uk-region.nix
-            ./configs/server.nix
-            agenix.nixosModules.default
-          ];
-        };
-      };
+      nixosConfigurations = (nixosConfigurations // {
+        nixowos.modules = [
+          ./configs/machines/nixowos/configuration.nix
+          ./configs/boot/systemd.nix
+          ./configs/kb.nix
+          ./configs/workstation.nix
+          home-manager.nixosModules.home-manager
+          ./configs/home-manager/hm-settings.nix
+          catppuccin.nixosModules.catppuccin
+        ];
+        nixowos-laptop.modules = [
+          ./configs/machines/nixowos-laptop/configuration.nix
+          ./configs/boot/systemd.nix
+          ./configs/kb.nix
+          ./configs/workstation.nix
+          home-manager.nixosModules.home-manager
+          ./configs/home-manager/hm-settings.nix
+          catppuccin.nixosModules.catppuccin
+        ];
+        nixos-thinkcentre-tiny.modules = [
+          ./configs/machines/nixos-thinkcentre-tiny/configuration.nix
+          ./configs/boot/systemd.nix
+          ./configs/server.nix
+          ./configs/services/nextcloud.nix
+          ./configs/services/openldap.nix
+          ./configs/services/navidrome.nix
+          ./configs/services/factorio.nix
+        ];
+        hp-dl380p-g8-LFF.modules = [
+          ./configs/machines/hp-dl380p-g8-LFF/configuration.nix
+          ./configs/boot/grub.nix
+          ./configs/server.nix
+        ];
+        hp-dl380p-g8-sff-2.modules = [
+          ./configs/machines/hp-dl380p-g8-sff-2/configuration.nix
+          ./configs/boot/grub.nix
+          ./configs/server.nix
+        ];
+        hp-dl380p-g8-sff-3.modules = [
+          ./configs/machines/hp-dl380p-g8-sff-3/configuration.nix
+          ./configs/boot/grub.nix
+          ./configs/server.nix
+        ];
+        hp-dl380p-g8-sff-4.modules = [
+          ./configs/machines/hp-dl380p-g8-sff-4/configuration.nix
+          ./configs/boot/grub.nix
+          ./configs/server.nix
+        ];
+        hp-dl380p-g8-sff-5.modules = [
+          ./configs/machines/hp-dl380p-g8-sff-5/configuration.nix
+          ./configs/boot/grub.nix
+          ./configs/server.nix
+        ];
+      });
       formatter = forAllSystems (pkgs: pkgs.nixpkgs-fmt);
     };
 }
