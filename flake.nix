@@ -35,20 +35,23 @@
     } @ inputs:
     let
       systems = [ "x86_64-linux" ];
-      machines = {
-        nixowos = nixpkgs-unstable.lib.nixosSystem;
-        nixowos-laptop = nixpkgs-unstable.lib.nixosSystem;
-        nixos-thinkcentre-tiny = nixpkgs.lib.nixosSystem;
-        hp-dl380p-g8-LFF = nixpkgs.lib.nixosSystem;
-      } // nixpkgs.lib.foldl (a: b: a // b) (map (x: { "hp-dl380p-sff-${x}" = nixpkgs.lib.nixosSystem; }) (nixpkgs.lib.range 2 5));
+      machines = nixpkgs.lib.mkMerge
+        [
+          {
+            nixowos = nixpkgs-unstable.lib.nixosSystem;
+            nixowos-laptop = nixpkgs-unstable.lib.nixosSystem;
+            nixos-thinkcentre-tiny = nixpkgs.lib.nixosSystem;
+            hp-dl380p-g8-LFF = nixpkgs.lib.nixosSystem;
+          }
+        ] ++ map (x: { "hp-dl380p-sff-${x}" = nixpkgs.lib.nixosSystem; }) (nixpkgs.lib.range 2 5);
       nixosConfigurations =
         let
           toSystem = name: val: val {
             specialArgs = inputs;
-            modules = (map (a: ./configs/${a}.nix) [ "nix-settings" "uk-region" ]) ++ [ agenix.nixosModules.default ];
+            modules = (builtins.map (a: ./configs/${a}.nix) [ "nix-settings" "uk-region" ]) ++ [ agenix.nixosModules.default ];
           };
         in
-        builtins.mapAttrs toSystem machines;
+        (builtins.mapAttrs toSystem machines);
 
       forAllSystems = fn: nixpkgs.lib.genAttrs systems (sys: fn nixpkgs.legacyPackages.${sys});
     in
