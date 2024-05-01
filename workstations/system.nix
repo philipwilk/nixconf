@@ -141,7 +141,7 @@
         powertop
 
         # Misc
-        neofetch
+        hyfetch
         usbutils
         pciutils
         libva-utils
