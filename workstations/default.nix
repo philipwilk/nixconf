@@ -5,7 +5,12 @@ let
   mdDoc = lib.mkDoc;
   join-dirfile = dir: map (file: ./${dir}/${file}.nix);
 in {
-  imports = [ ./system.nix ./desktops/gnome ./desktops/sway ];
+  imports = [
+    ./system.nix
+    ./desktops/gnome
+    ./desktops/sway
+    ./programs/lookingglass.nix
+  ];
 
   options.workstation = {
     enable = mkOpt {
