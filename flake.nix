@@ -53,11 +53,12 @@
       grubLab = homelabModules ++ [ ./configs/boot/grub.nix ];
 
       # Desktops
-      workstationModules = (join-dirfile "configs" [ "boot/systemd" ])
+      workstationModules = (join-dirfile "configs/boot" [ "systemd" "lanzaboote" ])
         ++ commonModules ++ [
           home-manager.nixosModules.home-manager
           agenix.nixosModules.default
           catppuccin.nixosModules.catppuccin
+          lanzaboote.nixosModules.lanzaboote
           ./workstations
         ];
 
@@ -88,8 +89,6 @@
         # Systemd machines
         nixowos = unstableSystem ([
           ./workstations/infra/nixowos
-          lanzaboote.nixosModules.lanzaboote
-          ./configs/boot/lanzaboote.nix
         ] ++ workstationModules);
 
         nixowos-laptop = unstableSystem ([
@@ -97,13 +96,13 @@
           auto-cpufreq.nixosModules.default
         ] ++ workstationModules);
 
-        mini = unstableSystem
-          ([ ./misc/infra/mini ./configs/boot/systemd.nix ] ++ commonModules);
+        mini = unstableSystem ([ 
+          ./workstations/infra/mini
+        ] ++ workstationModules);
 
-        nixosvmtest= unstableSystem ([ ./misc/infra/nixosvmtest.nix ] ++ commonModules);
+        nixosvmtest= unstableSystem ([ ./homelab/infra/nixosvmtest.nix ] ++ commonModules);
 
-        nixos-thinkcentre-tiny = unstableSystem
-          ([ 
+        nixos-thinkcentre-tiny = unstableSystem ([ 
             ./homelab/infra/nixos-thinkcentre-tiny 
           ] ++ systemdLab);
 
