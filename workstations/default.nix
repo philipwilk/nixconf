@@ -15,6 +15,7 @@ in
     ./system.nix
     ./desktops/gnome
     ./desktops/sway
+    ./programs/firefox.nix
   ];
 
   options.workstation = {
@@ -90,7 +91,7 @@ in
         binsh = "${pkgs.dash}/bin/dash";
         systemPackages = with pkgs; [
           chromium
-          firefox
+          ( lib.mkIf (config.workstation.declarativeHome == false) firefox)
           thunderbird
           rustdesk-flutter
           libreoffice
